@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#234f3b">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAEA0lEQVR4nO3dMW4UQRCGURs5Aq5BDjE5qWMkTuYYOecOPgCHAVKTOADL692dnZmurv+9kAB6uuubaSMkrj99/fJ4BaHejF4AjCQAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaAIgmgCIJgCiCYBoAiDazegFpPr15/eLv/7+7budV5LNF4BoAiCaAIgmgAEe7u5HL4EnAiCaAHZ27O3v67AvAezo1OEWwX4EQDQB7OTct7qvwD4EsIOlwyyC7QlgY4a4NgEUJ6BtCWBDaw2vCLYjgI0Y2jkIYBKC2oYANrDVsIpgfQJYmSGdiwAmI7B1CWBFew2nCNYjgJUYyjkJYFKCW4cAVjBqGEVwOQFcyBDOTQCTE+BlBHCBKsNXZR0zEsBChq4HATQhyGUEsEDVYau6rsoEcCZD1osAzjDD8M+wxkoE0JAITieAExmqngRwghmHf8Y1jyCAxkRwnACOMES9CeAVHYa/wzNsSQADfPx2u+ufJ4LDBHBAt6Hp9jxrEcALDEuOm0P/Xy39PNzd7379qs4X4Jmf339s+vuPHsCtn282AvhHheEYHUgaAQSqEHoVAniSNhRpz3uIAK72GwbXm3riA6j4JtwrlIrPvrf4ANKlRxAdQPrhExzA3sNf+f6f/CKIDYD/pUYQGcAMh135i9FJXAAjhn+WYZ7hxbC2uAB4XVoEUQGkHS7HxQQw4/CPujrNuFdLxQQwyiz3/+dSIogIIOUwOV/7AAz/cgl71z6A2Y2+QnWPoHUAow9v9PByXNsARg9/J533sm0ArKtrBC0D6HZYrlLbaRdAleHvOLRV9nZNrQLoeEDVdNvjVgHAudoE0O3N9FylK1WnvW4RQLUDqTSsW6m250u1CACWmj6ALm+iGXXY+6kD6HAA56h4tZr9DKYOoKKKQ8ph0wYw+5unk5nP4vrD7efH0YuAUab9AsAaBEA0ARDtZvQCjpn5Byzq/61Y6S+A4Z9f9TMsG0D1jeN0lc+ybACwBwEQrWwA1X944nSVz7JsAFdXtTeO01Q/Q/8UgmilvwCwNQEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEE0ARBMA0QRANAEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEE0ARBMA0QRANAEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEE0ARBMA0QRANAEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEE0ARBMA0QRAtL8mNe8Ug7RlBgAAAABJRU5ErkJggg==">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAEA0lEQVR4nO3dMW4UQRCGURs5Aq5BDjE5qWMkTuYYOecOPgCHAVKTOADL692dnZmurv+9kAB6uuubaSMkrj99/fJ4BaHejF4AjCQAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaAIgmgCIJgCiCYBoAiCaAIgmAKIJgGgCIJoAiCYAogmAaAIgmgCIJgCiCYBoAiDazegFpPr15/eLv/7+7budV5LNF4BoAiCaAIgmgAEe7u5HL4EnAiCaAHZ27O3v67AvAezo1OEWwX4EQDQB7OTct7qvwD4EsIOlwyyC7QlgY4a4NgEUJ6BtCWBDaw2vCLYjgI0Y2jkIYBKC2oYANrDVsIpgfQJYmSGdiwAmI7B1CWBFew2nCNYjgJUYyjkJYFKCW4cAVjBqGEVwOQFcyBDOTQCTE+BlBHCBKsNXZR0zEsBChq4HATQhyGUEsEDVYau6rsoEcCZD1osAzjDD8M+wxkoE0JAITieAExmqngRwghmHf8Y1jyCAxkRwnACOMES9CeAVHYa/wzNsSQADfPx2u+ufJ4LDBHBAt6Hp9jxrEcALDEuOm0P/Xy39PNzd7379qs4X4Jmf339s+vuPHsCtn282AvhHheEYHUgaAQSqEHoVAniSNhRpz3uIAK72GwbXm3riA6j4JtwrlIrPvrf4ANKlRxAdQPrhExzA3sNf+f6f/CKIDYD/pUYQGcAMh135i9FJXAAjhn+WYZ7hxbC2uAB4XVoEUQGkHS7HxQQw4/CPujrNuFdLxQQwyiz3/+dSIogIIOUwOV/7AAz/cgl71z6A2Y2+QnWPoHUAow9v9PByXNsARg9/J533sm0ArKtrBC0D6HZYrlLbaRdAleHvOLRV9nZNrQLoeEDVdNvjVgHAudoE0O3N9FylK1WnvW4RQLUDqTSsW6m250u1CACWmj6ALm+iGXXY+6kD6HAA56h4tZr9DKYOoKKKQ8ph0wYw+5unk5nP4vrD7efH0YuAUab9AsAaBEA0ARDtZvQCjpn5Byzq/61Y6S+A4Z9f9TMsG0D1jeN0lc+ybACwBwEQrWwA1X944nSVz7JsAFdXtTeO01Q/Q/8UgmilvwCwNQEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEE0ARBMA0QRANAEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEE0ARBMA0QRANAEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEE0ARBMA0QRANAEQTQBEEwDRBEA0ARBNAEQTANEEQDQBEE0ARBMA0QRAtL8mNe8Ug7RlBgAAAABJRU5ErkJggg==">
+<title>Site &amp; Yurt Tracker</title>
+<style>
+  :root{--bg:#f5f3ec;--ink:#1b2a23;--muted:#c8ddd0;--pine:#2f6b4f;--pine-dark:#234f3b;--done:#2f8f5b;
+    --tile:#ffffff;--line:#d6d3c6;--danger:#a23b2e;--shadow:0 1px 2px rgba(20,40,30,.08);}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+
+  header{background:var(--pine-dark);color:#fff;padding:calc(env(safe-area-inset-top) + 14px) 16px 0;
+    position:sticky;top:0;z-index:20;box-shadow:0 2px 8px rgba(20,40,30,.18);}
+  .titlerow{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+  h1{font-size:19px;margin:0;font-weight:700}
+  .date{font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap}
+  .subtitle{font-size:13px;color:#cfe3d7;font-weight:600;margin-top:3px}
+  .tabs{display:flex;gap:6px;margin-top:12px}
+  .tab{flex:1;border:0;background:transparent;color:#bcd4c7;font-size:15px;font-weight:700;
+    padding:11px 8px 12px;border-bottom:3px solid transparent;cursor:pointer;}
+  .tab .n{font-size:12px;font-weight:700;opacity:.9;margin-left:6px}
+  .tab.active{color:#fff;border-bottom-color:#7ed3a2}
+
+  main{padding:14px 16px 108px}
+  .toprow{display:flex;align-items:center;justify-content:flex-end;margin-bottom:10px}
+  .linkbtn{background:transparent;border:0;color:var(--pine);font-size:14px;font-weight:800;cursor:pointer;padding:4px}
+
+  .timer{text-align:center;font-variant-numeric:tabular-nums;font-size:17px;font-weight:800;color:var(--pine-dark);
+    background:#eaf6ef;border:1px solid #cfe9d9;border-radius:12px;padding:11px;margin-bottom:14px}
+  .timer small{display:block;font-size:11px;font-weight:700;color:#6b7268;letter-spacing:.4px;text-transform:uppercase;margin-bottom:2px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:10px}
+  .cell{position:relative;min-height:70px;border-radius:14px;border:2px solid var(--line);background:var(--tile);
+    color:var(--ink);font-size:21px;font-weight:800;display:flex;align-items:center;justify-content:center;text-align:center;
+    padding:8px 6px;cursor:pointer;box-shadow:var(--shadow);word-break:break-word;
+    transition:transform .06s ease,background .15s ease,border-color .15s ease,color .15s ease;}
+  .cell:active{transform:scale(.95)}
+  .cell.on{background:var(--done);border-color:var(--done);color:#fff}
+  .cell.on .lbl{opacity:.6;text-decoration:line-through;text-decoration-thickness:2px}
+  .cell .check{position:absolute;top:5px;right:7px;font-size:14px;font-weight:900;opacity:0;transition:opacity .15s ease}
+  .cell.on .check{opacity:1}
+
+  .msg{text-align:center;padding:44px 20px;color:#6b7268;font-size:15px;line-height:1.5}
+
+  .logitem{border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:10px;box-shadow:var(--shadow)}
+  .logitem .d{font-weight:800;font-size:15px}
+  .logitem .t{font-size:13px;color:#6b7268;margin:2px 0 8px;font-weight:600;font-variant-numeric:tabular-nums}
+  .logitem .r{font-size:14px;line-height:1.5}
+  .logitem .lab{font-weight:800;color:var(--pine)}
+  .logitem .skip{color:var(--danger)}
+
+  .btn{border:0;border-radius:12px;font-size:16px;font-weight:800;padding:15px 16px;cursor:pointer}
+  .btn.primary{background:var(--pine);color:#fff;box-shadow:var(--shadow)}
+  .btn.primary[disabled]{background:#b9c4bd;box-shadow:none;cursor:default}
+  .btn.ghost{background:#fff;color:var(--pine);border:2px solid var(--line)}
+
+  .footer{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px;z-index:30;box-shadow:0 -2px 10px rgba(20,40,30,.06)}
+  .footer .btn{flex:1}
+  .footer .btn.side{flex:0 0 auto;padding-left:20px;padding-right:20px}
+
+  @media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="titlerow"><h1>Site &amp; Yurt Tracker</h1><span class="date" id="date"></span></div>
+  <div class="subtitle" id="subtitle"></div>
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-tab="sites">Sites<span class="n" id="n-sites"></span></button>
+    <button class="tab" data-tab="yurts">Yurts<span class="n" id="n-yurts"></span></button>
+  </div>
+</header>
+
+<main id="main"></main>
+<div class="footer" id="footer"></div>
+
+<script>
+(function(){
+  "use strict";
+  var KEY="parkTracker.v5";
+  var ROSTERS={ sites:(function(){var a=[];for(var i=40;i<=72;i++)a.push(String(i));return a;})(),
+                yurts:["32Y","34Y","3Y","4Y","5Y","8Y","10Y"] };
+
+  var state={ screen:"add", active:"sites", picked:{sites:[],yurts:[]}, startTime:null, history:[] };
+  var showHistory=false;
+
+  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} }
+  function load(){
+    try{ var d=JSON.parse(localStorage.getItem(KEY)||"null"); if(!d)return;
+      state.screen=(d.screen==="track")?"track":"add";
+      state.active=(d.active==="yurts")?"yurts":"sites";
+      if(d.picked){ state.picked.sites=d.picked.sites||[]; state.picked.yurts=d.picked.yurts||[]; }
+      state.startTime=d.startTime||null;
+      state.history=Array.isArray(d.history)?d.history:[];
+    }catch(e){}
+  }
+
+  function picks(){ return state.picked[state.active]; }
+  function isPicked(l){ return picks().some(function(i){return i.label===l;}); }
+  function togglePick(l){
+    var list=picks(),p=-1; for(var i=0;i<list.length;i++){if(list[i].label===l){p=i;break;}}
+    if(p>-1)list.splice(p,1); else list.push({label:l,done:false});
+    save(); render();
+  }
+  function totalPicked(){ return state.picked.sites.length+state.picked.yurts.length; }
+
+  function pad(n){ return (n<10?"0":"")+n; }
+  function elapsed(ms){ var s=Math.floor(ms/1000),h=Math.floor(s/3600);s%=3600;var m=Math.floor(s/60),ss=s%60;
+    return h>0?(h+":"+pad(m)+":"+pad(ss)):(m+":"+pad(ss)); }
+  function durHMS(ms){ var s=Math.round(ms/1000),h=Math.floor(s/3600);s%=3600;var m=Math.floor(s/60),ss=s%60;
+    return h+":"+pad(m)+":"+pad(ss); }
+  function clockStr(ms){ try{return new Date(ms).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});}catch(e){return"";} }
+  function dateStr(ms){ try{return new Date(ms).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});}catch(e){return"";} }
+  function today(){ return dateStr(Date.now()); }
+
+  var main=document.getElementById("main"), footer=document.getElementById("footer"), tabs=document.getElementById("tabs");
+
+  function render(){
+    document.getElementById("date").textContent=today();
+
+    if(showHistory){
+      document.getElementById("subtitle").textContent="Your cleaning log";
+      tabs.style.display="none";
+      renderHistory(); return;
+    }
+    tabs.style.display="flex";
+    document.getElementById("subtitle").textContent =
+      state.screen==="add" ? "Tap what needs cleaning, then start" : "Tap each one as you finish";
+
+    ["sites","yurts"].forEach(function(k){
+      var p=state.picked[k], t="";
+      if(state.screen==="add") t=p.length?String(p.length):"";
+      else { var d=p.filter(function(i){return i.done;}).length; t=p.length?(d+"/"+p.length):""; }
+      document.getElementById("n-"+k).textContent=t;
+    });
+    Array.prototype.forEach.call(document.querySelectorAll(".tab"),function(t){
+      t.classList.toggle("active",t.getAttribute("data-tab")===state.active);
+    });
+
+    if(state.screen==="add") renderAdd(); else renderTrack();
+  }
+
+  function renderAdd(){
+    main.innerHTML="";
+    var top=document.createElement("div"); top.className="toprow";
+    var hist=document.createElement("button"); hist.className="linkbtn"; hist.textContent="History";
+    hist.addEventListener("click",function(){ showHistory=true; render(); });
+    top.appendChild(hist); main.appendChild(top);
+
+    var grid=document.createElement("div"); grid.className="grid";
+    ROSTERS[state.active].forEach(function(label){
+      var on=isPicked(label);
+      var c=document.createElement("button");
+      c.className="cell"+(on?" on":""); c.setAttribute("aria-pressed",on?"true":"false");
+      c.innerHTML='<span class="check">\u2713</span><span class="lbl"></span>';
+      c.querySelector(".lbl").textContent=label;
+      c.addEventListener("click",function(){ togglePick(label); });
+      grid.appendChild(c);
+    });
+    main.appendChild(grid);
+
+    footer.innerHTML="";
+    var n=totalPicked();
+    var start=document.createElement("button"); start.className="btn primary";
+    var verb=state.startTime?"Resume cleaning":"Start cleaning";
+    start.textContent=n?(verb+" ("+n+")"):"Tap items to begin"; start.disabled=n===0;
+    start.addEventListener("click",function(){
+      state.screen="track";
+      if(!state.startTime) state.startTime=Date.now();
+      if(picks().length===0) state.active=state.picked.sites.length?"sites":"yurts";
+      save(); render();
+    });
+    footer.appendChild(start);
+  }
+
+  function renderTrack(){
+    main.innerHTML="";
+
+    var tm=document.createElement("div"); tm.className="timer";
+    tm.innerHTML='<small>Cleaning time</small><span id="timer">'+(state.startTime?elapsed(Date.now()-state.startTime):"0:00")+'</span>';
+    main.appendChild(tm);
+
+    var list=picks();
+    if(list.length===0){
+      var other=state.active==="yurts"?"Sites":"Yurts";
+      var m=document.createElement("div"); m.className="msg";
+      m.innerHTML="Nothing picked here.<br>Check the "+other+" tab, or tap Back.";
+      main.appendChild(m);
+    } else {
+      var idx={}; ROSTERS[state.active].forEach(function(l,i){idx[l]=i;});
+      var display=list.slice().sort(function(a,b){return (idx[a.label]||999)-(idx[b.label]||999);});
+      var grid=document.createElement("div"); grid.className="grid";
+      display.forEach(function(item){
+        var c=document.createElement("button");
+        c.className="cell"+(item.done?" on":""); c.setAttribute("aria-pressed",item.done?"true":"false");
+        c.innerHTML='<span class="check">\u2713</span><span class="lbl"></span>';
+        c.querySelector(".lbl").textContent=item.label;
+        c.addEventListener("click",function(){ item.done=!item.done; save(); render(); });
+        grid.appendChild(c);
+      });
+      main.appendChild(grid);
+    }
+
+    footer.innerHTML="";
+    var back=document.createElement("button"); back.className="btn ghost side"; back.textContent="Back";
+    back.addEventListener("click",function(){ state.screen="add"; save(); render(); });
+    var done=document.createElement("button"); done.className="btn primary"; done.textContent="Done";
+    done.addEventListener("click",onDone);
+    footer.appendChild(back); footer.appendChild(done);
+  }
+
+  function onDone(){
+    if(!confirm("Finish cleaning and save this session?")) return;
+    var end=Date.now();
+    state.history.unshift({
+      start: state.startTime||end, end: end,
+      sites: state.picked.sites.filter(function(i){return i.done;}).map(function(i){return i.label;}),
+      sitesSkipped: state.picked.sites.filter(function(i){return !i.done;}).map(function(i){return i.label;}),
+      yurts: state.picked.yurts.filter(function(i){return i.done;}).map(function(i){return i.label;}),
+      yurtsSkipped: state.picked.yurts.filter(function(i){return !i.done;}).map(function(i){return i.label;})
+    });
+    state.picked={sites:[],yurts:[]}; state.startTime=null; state.screen="add"; state.active="sites";
+    save(); render();
+  }
+
+  function renderHistory(){
+    main.innerHTML="";
+    if(state.history.length===0){
+      var m=document.createElement("div"); m.className="msg"; m.textContent="No sessions saved yet.";
+      main.appendChild(m);
+    } else {
+      state.history.forEach(function(r){
+        var dur=durHMS((r.end||r.start)-(r.start||r.end));
+        var el=document.createElement("div"); el.className="logitem";
+        var sC=r.sites||[], sS=r.sitesSkipped||[], yC=r.yurts||[], yS=r.yurtsSkipped||[];
+        var html='<div class="d">'+dateStr(r.start)+'</div>'
+          +'<div class="t">'+clockStr(r.start)+' to '+clockStr(r.end)+' \u2022 '+dur+'</div>'
+          +'<div class="r"><span class="lab">Sites cleaned ('+sC.length+'):</span> '+(sC.length?sC.join(", "):"none")+'</div>';
+        if(sS.length) html+='<div class="r"><span class="lab skip">Sites skipped ('+sS.length+'):</span> '+sS.join(", ")+'</div>';
+        html+='<div class="r"><span class="lab">Yurts cleaned ('+yC.length+'):</span> '+(yC.length?yC.join(", "):"none")+'</div>';
+        if(yS.length) html+='<div class="r"><span class="lab skip">Yurts skipped ('+yS.length+'):</span> '+yS.join(", ")+'</div>';
+        el.innerHTML=html;
+        main.appendChild(el);
+      });
+    }
+
+    footer.innerHTML="";
+    var back=document.createElement("button"); back.className="btn ghost side"; back.textContent="Back";
+    back.addEventListener("click",function(){ showHistory=false; render(); });
+    var copy=document.createElement("button"); copy.className="btn primary"; copy.textContent="Copy for Sheets";
+    copy.disabled=state.history.length===0;
+    copy.addEventListener("click",copyLog);
+    footer.appendChild(back); footer.appendChild(copy);
+  }
+
+  function buildTSV(){
+    var rows=["Date\tStart\tEnd\tDuration\tSites cleaned\tSites cleaned #\tSites skipped\tSites skipped #\tYurts cleaned\tYurts cleaned #\tYurts skipped\tYurts skipped #"];
+    state.history.forEach(function(r){
+      var sC=r.sites||[],sS=r.sitesSkipped||[],yC=r.yurts||[],yS=r.yurtsSkipped||[];
+      rows.push([ dateStr(r.start), clockStr(r.start), clockStr(r.end), durHMS((r.end||r.start)-(r.start||r.end)),
+        sC.join(" "), sC.length, sS.join(" "), sS.length, yC.join(" "), yC.length, yS.join(" "), yS.length ].join("\t"));
+    });
+    return rows.join("\n");
+  }
+  function copyLog(){
+    var tsv=buildTSV();
+    function ok(){ alert("Copied. Paste into Google Sheets."); }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(tsv).then(ok, function(){ fb(tsv); });
+    } else fb(tsv);
+  }
+  function fb(text){
+    var ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.top="0"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try{ document.execCommand("copy"); alert("Copied. Paste into Google Sheets."); }
+    catch(e){ alert("Couldn't auto-copy here. The log is selected, long-press to Copy."); return; }
+    document.body.removeChild(ta);
+  }
+
+  tabs.addEventListener("click",function(e){
+    var t=e.target.closest(".tab"); if(!t)return;
+    state.active=t.getAttribute("data-tab"); save(); render();
+  });
+
+  setInterval(function(){
+    var el=document.getElementById("timer");
+    if(el && state.startTime) el.textContent=elapsed(Date.now()-state.startTime);
+  },1000);
+
+  load(); render();
+})();
+</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}</script>
+</body>
+</html>
