@@ -1,4 +1,5 @@
-var CACHE = "park-tracker-v3";
+var CACHE_PREFIX = "yurt-tracker-";
+var CACHE = CACHE_PREFIX + "v4";
 var ASSETS = [".", "index.html", "manifest.json", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", function(e){
@@ -6,15 +7,16 @@ self.addEventListener("install", function(e){
 });
 self.addEventListener("activate", function(e){
   e.waitUntil(caches.keys().then(function(keys){
-    return Promise.all(keys.map(function(k){ if(k!==CACHE) return caches.delete(k); }));
+    return Promise.all(keys.map(function(k){ if(k.indexOf(CACHE_PREFIX)===0 && k!==CACHE) return caches.delete(k); }));
   }).then(function(){ return self.clients.claim(); }));
 });
 self.addEventListener("fetch", function(e){
   var req = e.request;
   e.respondWith(
-    caches.match(req).then(function(hit){
+    caches.open(CACHE).then(function(cache){ return cache.match(req); }).then(function(hit){
       return hit || fetch(req).catch(function(){
-        if(req.mode === "navigate") return caches.match("index.html");
+        if(req.mode === "navigate") return caches.open(CACHE).then(function(cache){ return cache.match("index.html"); });
+        return Response.error();
       });
     })
   );
