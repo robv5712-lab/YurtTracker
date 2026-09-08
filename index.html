@@ -40,6 +40,10 @@
   .timer small{display:block;font-size:11px;font-weight:700;color:#6b7268;letter-spacing:.4px;text-transform:uppercase;margin-bottom:2px}
 
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:10px}
+  .yurt-grid{display:flex;flex-direction:column;gap:10px}
+  .yurt-row{display:flex;justify-content:center;gap:10px;min-height:70px}
+  .yurt-row .cell{flex:0 0 calc((100% - 20px)/3);max-width:110px}
+  .yurt-row .empty{visibility:hidden;pointer-events:none}
   .cell{position:relative;min-height:70px;border-radius:14px;border:2px solid var(--line);background:var(--tile);
     color:var(--ink);font-size:21px;font-weight:800;display:flex;align-items:center;justify-content:center;text-align:center;
     padding:8px 6px;cursor:pointer;box-shadow:var(--shadow);word-break:break-word;
@@ -90,15 +94,15 @@
   "use strict";
   var KEY="parkTracker.v5";
   var ROSTERS={ sites:(function(){var a=[];for(var i=40;i<=72;i++)a.push(String(i));return a;})(),
-                yurts:["32Y","34Y","3Y","4Y","5Y","8Y","10Y"] };
+                yurts:["34Y","32Y","3Y","4Y","5Y","8Y","10Y"] };
+  var YURT_ROWS=[["34Y","32Y"],["3Y","4Y","5Y"],["8Y","10Y"]];
 
   var state={ screen:"add", active:"sites", picked:{sites:[],yurts:[]}, startTime:null, history:[] };
-  var showHistory=false;
 
   function save(){ try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} }
   function load(){
     try{ var d=JSON.parse(localStorage.getItem(KEY)||"null"); if(!d)return;
-      state.screen=(d.screen==="track")?"track":"add";
+      state.screen=(d.screen==="track" || d.screen==="history")?d.screen:"add";
       state.active=(d.active==="yurts")?"yurts":"sites";
       if(d.picked){ state.picked.sites=d.picked.sites||[]; state.picked.yurts=d.picked.yurts||[]; }
       state.startTime=d.startTime||null;
@@ -129,7 +133,7 @@
   function render(){
     document.getElementById("date").textContent=today();
 
-    if(showHistory){
+    if(state.screen==="history"){
       document.getElementById("subtitle").textContent="Your cleaning log";
       tabs.style.display="none";
       renderHistory(); return;
@@ -155,7 +159,7 @@
     main.innerHTML="";
     var top=document.createElement("div"); top.className="toprow";
     var hist=document.createElement("button"); hist.className="linkbtn"; hist.textContent="History";
-    hist.addEventListener("click",function(){ showHistory=true; render(); });
+    hist.addEventListener("click",function(){ state.screen="history"; save(); render(); });
     top.appendChild(hist); main.appendChild(top);
 
     var grid=document.createElement("div"); grid.className="grid";
@@ -168,7 +172,7 @@
       c.addEventListener("click",function(){ togglePick(label); });
       grid.appendChild(c);
     });
-    main.appendChild(grid);
+    arrangeYurts(grid); main.appendChild(grid);
 
     footer.innerHTML="";
     var n=totalPicked();
@@ -199,17 +203,21 @@
       main.appendChild(m);
     } else {
       var idx={}; ROSTERS[state.active].forEach(function(l,i){idx[l]=i;});
-      var display=list.slice().sort(function(a,b){return (idx[a.label]||999)-(idx[b.label]||999);});
+      var display=list.slice().sort(function(a,b){return idx[a.label]-idx[b.label];});
       var grid=document.createElement("div"); grid.className="grid";
       display.forEach(function(item){
         var c=document.createElement("button");
         c.className="cell"+(item.done?" on":""); c.setAttribute("aria-pressed",item.done?"true":"false");
         c.innerHTML='<span class="check">\u2713</span><span class="lbl"></span>';
         c.querySelector(".lbl").textContent=item.label;
-        c.addEventListener("click",function(){ item.done=!item.done; save(); render(); });
+        c.addEventListener("click",function(){
+          item.done=!item.done;
+          if(item.done){ try{ navigator.vibrate(35); }catch(e){} }
+          save(); render();
+        });
         grid.appendChild(c);
       });
-      main.appendChild(grid);
+      arrangeYurts(grid); main.appendChild(grid);
     }
 
     footer.innerHTML="";
@@ -218,6 +226,24 @@
     var done=document.createElement("button"); done.className="btn primary"; done.textContent="Done";
     done.addEventListener("click",onDone);
     footer.appendChild(back); footer.appendChild(done);
+  }
+
+  function arrangeYurts(grid){
+    if(state.active!=="yurts")return;
+    var cells={};
+    Array.prototype.forEach.call(grid.children,function(c){
+      cells[c.querySelector(".lbl").textContent]=c;
+    });
+    grid.innerHTML=""; grid.className="yurt-grid";
+    YURT_ROWS.forEach(function(labels){
+      var row=document.createElement("div"); row.className="yurt-row";
+      labels.forEach(function(label){
+        var c=cells[label];
+        if(!c){ c=document.createElement("span"); c.className="cell empty"; c.setAttribute("aria-hidden","true"); }
+        row.appendChild(c);
+      });
+      grid.appendChild(row);
+    });
   }
 
   function onDone(){
@@ -257,7 +283,7 @@
 
     footer.innerHTML="";
     var back=document.createElement("button"); back.className="btn ghost side"; back.textContent="Back";
-    back.addEventListener("click",function(){ showHistory=false; render(); });
+    back.addEventListener("click",function(){ state.screen="add"; save(); render(); });
     var copy=document.createElement("button"); copy.className="btn primary"; copy.textContent="Copy for Sheets";
     copy.disabled=state.history.length===0;
     copy.addEventListener("click",copyLog);
