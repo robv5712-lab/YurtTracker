@@ -52,6 +52,9 @@
   .timer small{display:block;font-size:11px;font-weight:700;color:#6b7268;letter-spacing:.4px;text-transform:uppercase;margin-bottom:2px}
 
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:10px}
+  .loop-tabs{display:flex;gap:8px;margin-bottom:14px}
+  .loop-tab{flex:1;min-height:48px;border:1px solid #bbc9bd;border-radius:10px;background:#fff;color:var(--pine-dark);font:inherit;font-size:14px;font-weight:700;cursor:pointer;padding:10px 4px}
+  .loop-tab[aria-pressed="true"]{background:var(--pine-dark);border-color:var(--pine-dark);color:#fff}
   .yurt-grid{display:flex;flex-direction:column;gap:10px}
   .yurt-row{display:flex;justify-content:center;gap:10px;min-height:70px}
   .yurt-row .cell{flex:0 0 calc((100% - 20px)/3);max-width:110px}
@@ -108,7 +111,9 @@
 (function(){
   "use strict";
   var KEY="parkTracker.v5";
-  var ROSTERS={ sites:(function(){var a=[];for(var i=40;i<=72;i++)a.push(String(i));return a;})(),
+  function range(first,last){var a=[];for(var i=first;i<=last;i++)a.push(String(i));return a;}
+  var LOOPS={A:range(76,91),B:range(1,35).filter(function(n){return ["2","6","3","4","5","8","10","32","34"].indexOf(n)===-1;}),C:range(40,72)};
+  var ROSTERS={ sites:LOOPS.B.concat(LOOPS.C,LOOPS.A),
                 yurts:["34Y","32Y","3Y","4Y","5Y","8Y","10Y"] };
   var YURT_ROWS=[["34Y","32Y"],["3Y","4Y","5Y"],["8Y","10Y"]];
 
@@ -120,7 +125,7 @@
   function localDate(ms){var d=new Date(ms);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
   function dateFromKey(key){return new Date(key+"T12:00:00");}
   function validDate(key){return typeof key==="string" && /^\d{4}-\d{2}-\d{2}$/.test(key) && Number.isFinite(dateFromKey(key).getTime()) && localDate(dateFromKey(key).getTime())===key;}
-  var state={ screen:"add", active:"tasks", picked:{sites:[],yurts:[]}, startTime:null, history:[], workDate:localDate(Date.now()), tasks:[] };
+  var state={ screen:"add", active:"tasks", activeLoop:"C", picked:{sites:[],yurts:[]}, startTime:null, history:[], workDate:localDate(Date.now()), tasks:[] };
   var observedDate=localDate(Date.now());
   function assignment(){return WEEK[dateFromKey(state.workDate).getDay()];}
   function resetTasks(){state.tasks=assignment().tasks.map(function(label){return {label:label,done:false};});}
@@ -132,6 +137,7 @@
     try{ var d=JSON.parse(localStorage.getItem(KEY)||"null"); if(!d)return;
       state.screen=(d.screen==="track" || d.screen==="history")?d.screen:"add";
       state.active=["tasks","sites","yurts"].indexOf(d.active)!==-1?d.active:"tasks";
+      state.activeLoop=["A","B","C"].indexOf(d.activeLoop)!==-1?d.activeLoop:"C";
       ["sites","yurts"].forEach(function(k){
         var list=d.picked && Array.isArray(d.picked[k])?d.picked[k]:[];
         state.picked[k]=ROSTERS[k].filter(function(label){return list.some(function(i){return i && i.label===label;});}).map(function(label){return {label:label,done:!!list.find(function(i){return i && i.label===label;}).done};});
@@ -217,6 +223,17 @@
     });
   }
 
+  function renderLoops(){
+    var nav=document.createElement("div");nav.className="loop-tabs";nav.setAttribute("role","group");nav.setAttribute("aria-label","Campsite loop");
+    ["A","B","C"].forEach(function(loop){
+      var selected=state.picked.sites.filter(function(item){return LOOPS[loop].indexOf(item.label)!==-1;});
+      var count=state.screen==="track"?selected.filter(function(item){return item.done;}).length+"/"+selected.length:String(selected.length);
+      var button=document.createElement("button");button.className="loop-tab";button.textContent=loop+" Loop ("+count+")";button.setAttribute("aria-pressed",String(state.activeLoop===loop));
+      button.addEventListener("click",function(){state.activeLoop=loop;save();render();});nav.appendChild(button);
+    });
+    main.appendChild(nav);
+  }
+
   function renderAdd(){
     main.innerHTML="";
     var top=document.createElement("div"); top.className="toprow";
@@ -227,8 +244,9 @@
 
     if(state.active==="tasks")renderTasks();
     else{
+    if(state.active==="sites")renderLoops();
     var grid=document.createElement("div"); grid.className="grid";
-    ROSTERS[state.active].forEach(function(label){
+    (state.active==="sites"?LOOPS[state.activeLoop]:ROSTERS.yurts).forEach(function(label){
       var on=isPicked(label);
       var c=document.createElement("button");
       c.className="cell"+(on?" on":""); c.setAttribute("aria-pressed",on?"true":"false");
@@ -263,10 +281,14 @@
     if(state.active==="tasks")renderTasks();
     else{
     var list=picks();
+    if(state.active==="sites"){
+      renderLoops();
+      list=list.filter(function(item){return LOOPS[state.activeLoop].indexOf(item.label)!==-1;});
+    }
     if(list.length===0){
       var other=state.active==="yurts"?"Sites":"Yurts";
       var m=document.createElement("div"); m.className="msg";
-      m.innerHTML="Nothing picked here.<br>Check the "+other+" tab, or tap Back.";
+      m.textContent=state.active==="sites"?"No sites picked in "+state.activeLoop+" Loop. Choose another loop, or tap Back to add sites.":"Nothing picked here. Check the "+other+" tab, or tap Back.";
       main.appendChild(m);
     } else {
       var idx={}; ROSTERS[state.active].forEach(function(l,i){idx[l]=i;});
@@ -404,11 +426,17 @@
     state.active=t.getAttribute("data-tab"); save(); render();
   });
 
+  function refreshDay(){
+    var currentDate=localDate(Date.now());
+    if(currentDate!==observedDate){observedDate=currentDate;if(!hasProgress()){state.workDate=currentDate;resetTasks();save();}render();}
+  }
+  document.addEventListener("visibilitychange",function(){if(!document.hidden)refreshDay();});
+  window.addEventListener("focus",refreshDay);
+
   setInterval(function(){
     var el=document.getElementById("timer");
     if(el && state.startTime) el.textContent=elapsed(Date.now()-state.startTime);
-    var currentDate=localDate(Date.now());
-    if(currentDate!==observedDate){observedDate=currentDate;if(!hasProgress()){state.workDate=currentDate;resetTasks();save();}render();}
+    refreshDay();
   },1000);
 
   resetTasks(); load(); save(); render();
