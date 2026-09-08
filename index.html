@@ -31,7 +31,19 @@
   .tab .n{font-size:12px;font-weight:700;opacity:.9;margin-left:6px}
   .tab.active{color:#fff;border-bottom-color:#7ed3a2}
 
-  main{padding:14px 16px 108px}
+  main{padding:14px 16px calc(120px + env(safe-area-inset-bottom))}
+  .hostbadge{display:inline-block;background:#3a6650;color:#fff;padding:4px 8px;border-radius:7px;font-size:13px;margin-right:7px}
+  .assignment{background:#fff;border:1px solid #d6ded5;border-radius:14px;padding:16px;margin-bottom:16px}
+  .assignment .eyebrow{font-size:12px;color:#526a59;letter-spacing:.5px}
+  .assignment h2{font-size:25px;margin:5px 0;color:var(--pine-dark)}
+  .workdate{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;font-size:14px}
+  .workdate input{font:inherit;min-height:44px;max-width:100%;border:1px solid #bbc9bd;border-radius:8px;padding:8px;background:#fff;color:var(--ink)}
+  .task{display:flex;align-items:center;gap:12px;padding:14px;min-height:60px;margin-bottom:9px;background:#fff;border:1px solid #d6ded5;border-radius:12px;font-weight:600;cursor:pointer}
+  .task input{width:24px;height:24px;flex-shrink:0;accent-color:var(--done)}
+  .task.complete{background:#e6f0e6}
+  .task.complete span{text-decoration:line-through}
+  .tasksummary{color:#526a59;font-size:14px;margin:0 0 12px}
+  .storage-warning{background:#fff0de;color:#702e17;padding:12px;position:sticky;top:0;z-index:40}
   .toprow{display:flex;align-items:center;justify-content:flex-end;margin-bottom:10px}
   .linkbtn{background:transparent;border:0;color:var(--pine);font-size:14px;font-weight:800;cursor:pointer;padding:4px}
 
@@ -50,7 +62,7 @@
     transition:transform .06s ease,background .15s ease,border-color .15s ease,color .15s ease;}
   .cell:active{transform:scale(.95)}
   .cell.on{background:var(--done);border-color:var(--done);color:#fff}
-  .cell.on .lbl{opacity:.6;text-decoration:line-through;text-decoration-thickness:2px}
+  .cell.on .lbl{text-decoration:line-through;text-decoration-thickness:2px}
   .cell .check{position:absolute;top:5px;right:7px;font-size:14px;font-weight:900;opacity:0;transition:opacity .15s ease}
   .cell.on .check{opacity:1}
 
@@ -78,14 +90,17 @@
 </head>
 <body>
 <header>
-  <div class="titlerow"><h1>Site &amp; Yurt Tracker</h1><span class="date" id="date"></span></div>
+  <div class="titlerow"><h1>Site &amp; Yurt Tracker</h1><span class="hostbadge">B6</span></div>
+  <div class="date" id="date"></div>
   <div class="subtitle" id="subtitle"></div>
   <div class="tabs" id="tabs">
+    <button class="tab active" data-tab="tasks">Tasks<span class="n" id="n-tasks"></span></button>
     <button class="tab active" data-tab="sites">Sites<span class="n" id="n-sites"></span></button>
     <button class="tab" data-tab="yurts">Yurts<span class="n" id="n-yurts"></span></button>
   </div>
 </header>
 
+<div id="storage-warning" class="storage-warning" role="alert" hidden>Changes could not be saved on this phone. Keep the app open and copy your history before closing.</div>
 <main id="main"></main>
 <div class="footer" id="footer"></div>
 
@@ -97,16 +112,37 @@
                 yurts:["34Y","32Y","3Y","4Y","5Y","8Y","10Y"] };
   var YURT_ROWS=[["34Y","32Y"],["3Y","4Y","5Y"],["8Y","10Y"]];
 
-  var state={ screen:"add", active:"sites", picked:{sites:[],yurts:[]}, startTime:null, history:[] };
+  var GREETING={role:"Greeting",hours:"2:00 PM – 9:00 PM",tasks:["Firewood & Ventek","Sites / firepits / pads","Blow pathways","Check recycling","PM RR check","Dog bags"]};
+  var YURTS={role:"Yurts",hours:"9:00 AM – 2:00 PM",tasks:["Yurt cleaning","Sites / firepits / pads"]};
+  var DAY_USE={role:"Day Use",hours:"9:00 AM – 2:00 PM",tasks:["Blow pathways & table pads","PM DU RR check","Dog bags","Litter pick DRT","Sites / firepits / pads"]};
+  var OFF={role:"Day off",hours:"No scheduled duties",tasks:[]};
+  var WEEK=[DAY_USE,GREETING,GREETING,YURTS,YURTS,OFF,OFF];
+  function localDate(ms){var d=new Date(ms);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+  function dateFromKey(key){return new Date(key+"T12:00:00");}
+  function validDate(key){return typeof key==="string" && /^\d{4}-\d{2}-\d{2}$/.test(key) && Number.isFinite(dateFromKey(key).getTime()) && localDate(dateFromKey(key).getTime())===key;}
+  var state={ screen:"add", active:"tasks", picked:{sites:[],yurts:[]}, startTime:null, history:[], workDate:localDate(Date.now()), tasks:[] };
+  var observedDate=localDate(Date.now());
+  function assignment(){return WEEK[dateFromKey(state.workDate).getDay()];}
+  function resetTasks(){state.tasks=assignment().tasks.map(function(label){return {label:label,done:false};});}
+  function hasProgress(){return state.startTime!==null || totalPicked()>0 || state.tasks.some(function(t){return t.done;});}
+  function buzz(){try{navigator.vibrate(35);}catch(e){}}
 
-  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} }
+  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(state)); document.getElementById("storage-warning").hidden=true; return true; }catch(e){document.getElementById("storage-warning").hidden=false;return false;} }
   function load(){
     try{ var d=JSON.parse(localStorage.getItem(KEY)||"null"); if(!d)return;
       state.screen=(d.screen==="track" || d.screen==="history")?d.screen:"add";
-      state.active=(d.active==="yurts")?"yurts":"sites";
-      if(d.picked){ state.picked.sites=d.picked.sites||[]; state.picked.yurts=d.picked.yurts||[]; }
-      state.startTime=d.startTime||null;
+      state.active=["tasks","sites","yurts"].indexOf(d.active)!==-1?d.active:"tasks";
+      ["sites","yurts"].forEach(function(k){
+        var list=d.picked && Array.isArray(d.picked[k])?d.picked[k]:[];
+        state.picked[k]=ROSTERS[k].filter(function(label){return list.some(function(i){return i && i.label===label;});}).map(function(label){return {label:label,done:!!list.find(function(i){return i && i.label===label;}).done};});
+      });
+      state.startTime=Number.isFinite(d.startTime) && d.startTime>0?d.startTime:null;
       state.history=Array.isArray(d.history)?d.history:[];
+      state.workDate=validDate(d.workDate)?d.workDate:localDate(state.startTime||Date.now());
+      resetTasks();
+      state.tasks.forEach(function(t){t.done=Array.isArray(d.tasks) && d.tasks.some(function(i){return i && i.label===t.label && i.done;});});
+      if(!hasProgress()){state.workDate=localDate(Date.now());resetTasks();}
+      if(state.screen==="track" && state.startTime===null)state.screen="add";
     }catch(e){}
   }
 
@@ -120,9 +156,9 @@
   function totalPicked(){ return state.picked.sites.length+state.picked.yurts.length; }
 
   function pad(n){ return (n<10?"0":"")+n; }
-  function elapsed(ms){ var s=Math.floor(ms/1000),h=Math.floor(s/3600);s%=3600;var m=Math.floor(s/60),ss=s%60;
+  function elapsed(ms){ var s=Math.floor(Math.max(0,ms)/1000),h=Math.floor(s/3600);s%=3600;var m=Math.floor(s/60),ss=s%60;
     return h>0?(h+":"+pad(m)+":"+pad(ss)):(m+":"+pad(ss)); }
-  function durHMS(ms){ var s=Math.round(ms/1000),h=Math.floor(s/3600);s%=3600;var m=Math.floor(s/60),ss=s%60;
+  function durHMS(ms){ var s=Math.floor(Math.max(0,ms)/1000),h=Math.floor(s/3600);s%=3600;var m=Math.floor(s/60),ss=s%60;
     return h+":"+pad(m)+":"+pad(ss); }
   function clockStr(ms){ try{return new Date(ms).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});}catch(e){return"";} }
   function dateStr(ms){ try{return new Date(ms).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});}catch(e){return"";} }
@@ -134,13 +170,14 @@
     document.getElementById("date").textContent=today();
 
     if(state.screen==="history"){
-      document.getElementById("subtitle").textContent="Your cleaning log";
+      document.getElementById("subtitle").textContent="Your shift and cleaning log";
       tabs.style.display="none";
       renderHistory(); return;
     }
     tabs.style.display="flex";
     document.getElementById("subtitle").textContent =
-      state.screen==="add" ? "Tap what needs cleaning, then start" : "Tap each one as you finish";
+      state.screen==="add" ? "Your B6 schedule and cleaning list" : "Tap each task or tile as you finish";
+    document.getElementById("n-tasks").textContent=state.tasks.filter(function(t){return t.done;}).length+"/"+state.tasks.length;
 
     ["sites","yurts"].forEach(function(k){
       var p=state.picked[k], t="";
@@ -150,9 +187,34 @@
     });
     Array.prototype.forEach.call(document.querySelectorAll(".tab"),function(t){
       t.classList.toggle("active",t.getAttribute("data-tab")===state.active);
+      t.setAttribute("aria-pressed",t.getAttribute("data-tab")===state.active?"true":"false");
     });
 
     if(state.screen==="add") renderAdd(); else renderTrack();
+  }
+
+  function renderAssignment(){
+    var box=document.createElement("section"); box.className="assignment";
+    var dateLabel=document.createElement("label"); dateLabel.className="workdate"; dateLabel.textContent="Work date";
+    var input=document.createElement("input"); input.type="date";input.value=state.workDate;input.disabled=hasProgress();
+    input.addEventListener("change",function(){if(!validDate(input.value)){input.value=state.workDate;return;}state.workDate=input.value;resetTasks();save();render();});
+    dateLabel.appendChild(input);box.appendChild(dateLabel);
+    var day=document.createElement("div");day.className="eyebrow";day.textContent=dateFromKey(state.workDate).toLocaleDateString(undefined,{weekday:"long"})+" · B6";
+    var title=document.createElement("h2");title.textContent=assignment().role;
+    var hours=document.createElement("div");hours.textContent=assignment().hours;
+    box.appendChild(day);box.appendChild(title);box.appendChild(hours);main.appendChild(box);
+  }
+
+  function renderTasks(){
+    var summary=document.createElement("p");summary.className="tasksummary";
+    summary.textContent=state.tasks.length?state.tasks.filter(function(t){return t.done;}).length+" of "+state.tasks.length+" tasks complete":"No scheduled duties. You can still select sites or yurts for extra cleaning.";
+    main.appendChild(summary);
+    state.tasks.forEach(function(task){
+      var row=document.createElement("label");row.className="task"+(task.done?" complete":"");
+      var checkbox=document.createElement("input");checkbox.type="checkbox";checkbox.checked=task.done;
+      checkbox.addEventListener("change",function(){task.done=checkbox.checked;if(task.done)buzz();save();render();});
+      var label=document.createElement("span");label.textContent=task.label;row.appendChild(checkbox);row.appendChild(label);main.appendChild(row);
+    });
   }
 
   function renderAdd(){
@@ -161,7 +223,10 @@
     var hist=document.createElement("button"); hist.className="linkbtn"; hist.textContent="History";
     hist.addEventListener("click",function(){ state.screen="history"; save(); render(); });
     top.appendChild(hist); main.appendChild(top);
+    renderAssignment();
 
+    if(state.active==="tasks")renderTasks();
+    else{
     var grid=document.createElement("div"); grid.className="grid";
     ROSTERS[state.active].forEach(function(label){
       var on=isPicked(label);
@@ -173,16 +238,15 @@
       grid.appendChild(c);
     });
     arrangeYurts(grid); main.appendChild(grid);
+    }
 
     footer.innerHTML="";
     var n=totalPicked();
     var start=document.createElement("button"); start.className="btn primary";
-    var verb=state.startTime?"Resume cleaning":"Start cleaning";
-    start.textContent=n?(verb+" ("+n+")"):"Tap items to begin"; start.disabled=n===0;
+    start.textContent=state.startTime?"Resume shift":"Start shift"; start.disabled=!state.startTime && state.tasks.length===0 && n===0;
     start.addEventListener("click",function(){
       state.screen="track";
       if(!state.startTime) state.startTime=Date.now();
-      if(picks().length===0) state.active=state.picked.sites.length?"sites":"yurts";
       save(); render();
     });
     footer.appendChild(start);
@@ -190,11 +254,14 @@
 
   function renderTrack(){
     main.innerHTML="";
+    renderAssignment();
 
     var tm=document.createElement("div"); tm.className="timer";
-    tm.innerHTML='<small>Cleaning time</small><span id="timer">'+(state.startTime?elapsed(Date.now()-state.startTime):"0:00")+'</span>';
+    tm.innerHTML='<small>Shift time</small><span id="timer">'+(state.startTime?elapsed(Date.now()-state.startTime):"0:00")+'</span>';
     main.appendChild(tm);
 
+    if(state.active==="tasks")renderTasks();
+    else{
     var list=picks();
     if(list.length===0){
       var other=state.active==="yurts"?"Sites":"Yurts";
@@ -212,18 +279,19 @@
         c.querySelector(".lbl").textContent=item.label;
         c.addEventListener("click",function(){
           item.done=!item.done;
-          if(item.done){ try{ navigator.vibrate(35); }catch(e){} }
+          if(item.done)buzz();
           save(); render();
         });
         grid.appendChild(c);
       });
       arrangeYurts(grid); main.appendChild(grid);
     }
+    }
 
     footer.innerHTML="";
     var back=document.createElement("button"); back.className="btn ghost side"; back.textContent="Back";
     back.addEventListener("click",function(){ state.screen="add"; save(); render(); });
-    var done=document.createElement("button"); done.className="btn primary"; done.textContent="Done";
+    var done=document.createElement("button"); done.className="btn primary"; done.textContent="Finish shift";
     done.addEventListener("click",onDone);
     footer.appendChild(back); footer.appendChild(done);
   }
@@ -247,17 +315,24 @@
   }
 
   function onDone(){
-    if(!confirm("Finish cleaning and save this session?")) return;
+    if(!confirm("Finish this shift and save tasks and cleaning to history?")) return;
     var end=Date.now();
-    state.history.unshift({
+    var record={
       start: state.startTime||end, end: end,
+      host:"B6", workDate:state.workDate, assignment:assignment().role, hours:assignment().hours,
+      tasks:state.tasks.filter(function(t){return t.done;}).map(function(t){return t.label;}),
+      tasksSkipped:state.tasks.filter(function(t){return !t.done;}).map(function(t){return t.label;}),
       sites: state.picked.sites.filter(function(i){return i.done;}).map(function(i){return i.label;}),
       sitesSkipped: state.picked.sites.filter(function(i){return !i.done;}).map(function(i){return i.label;}),
       yurts: state.picked.yurts.filter(function(i){return i.done;}).map(function(i){return i.label;}),
       yurtsSkipped: state.picked.yurts.filter(function(i){return !i.done;}).map(function(i){return i.label;})
-    });
-    state.picked={sites:[],yurts:[]}; state.startTime=null; state.screen="add"; state.active="sites";
-    save(); render();
+    };
+    var previous=JSON.stringify(state);
+    state.history.unshift(record);
+    state.picked={sites:[],yurts:[]}; state.startTime=null; state.screen="add"; state.active="tasks";
+    state.workDate=localDate(Date.now());resetTasks();
+    if(!save()){state=JSON.parse(previous);alert("The shift could not be saved. Your current shift is still open. Please copy your history and free storage before trying again.");}
+    render();
   }
 
   function renderHistory(){
@@ -277,6 +352,15 @@
         html+='<div class="r"><span class="lab">Yurts cleaned ('+yC.length+'):</span> '+(yC.length?yC.join(", "):"none")+'</div>';
         if(yS.length) html+='<div class="r"><span class="lab skip">Yurts skipped ('+yS.length+'):</span> '+yS.join(", ")+'</div>';
         el.innerHTML=html;
+        if(r.assignment){
+          var shift=document.createElement("div");shift.className="r";
+          shift.textContent=(r.host||"B6")+" · "+r.assignment+" · "+(r.hours||"")+(r.workDate?" · Work date: "+r.workDate:"");
+          el.appendChild(shift);
+          [["Tasks completed",r.tasks||[],false],["Tasks skipped",r.tasksSkipped||[],true]].forEach(function(group){
+            var line=document.createElement("div");line.className="r"+(group[2]?" skip":"");
+            line.textContent=group[0]+" ("+group[1].length+"): "+(group[1].length?group[1].join("; "):"none");el.appendChild(line);
+          });
+        }
         main.appendChild(el);
       });
     }
@@ -291,11 +375,12 @@
   }
 
   function buildTSV(){
-    var rows=["Date\tStart\tEnd\tDuration\tSites cleaned\tSites cleaned #\tSites skipped\tSites skipped #\tYurts cleaned\tYurts cleaned #\tYurts skipped\tYurts skipped #"];
+    var rows=["Date\tStart\tEnd\tDuration\tSites cleaned\tSites cleaned #\tSites skipped\tSites skipped #\tYurts cleaned\tYurts cleaned #\tYurts skipped\tYurts skipped #\tHost\tWork date\tAssignment\tScheduled hours\tTasks completed\tTasks completed #\tTasks skipped\tTasks skipped #"];
     state.history.forEach(function(r){
       var sC=r.sites||[],sS=r.sitesSkipped||[],yC=r.yurts||[],yS=r.yurtsSkipped||[];
       rows.push([ dateStr(r.start), clockStr(r.start), clockStr(r.end), durHMS((r.end||r.start)-(r.start||r.end)),
-        sC.join(" "), sC.length, sS.join(" "), sS.length, yC.join(" "), yC.length, yS.join(" "), yS.length ].join("\t"));
+        sC.join(" "), sC.length, sS.join(" "), sS.length, yC.join(" "), yC.length, yS.join(" "), yS.length,
+        r.host||"",r.workDate||"",r.assignment||"",r.hours||"",(r.tasks||[]).join("; "),(r.tasks||[]).length,(r.tasksSkipped||[]).join("; "),(r.tasksSkipped||[]).length ].join("\t"));
     });
     return rows.join("\n");
   }
@@ -309,8 +394,8 @@
   function fb(text){
     var ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.top="0"; ta.style.opacity="0";
     document.body.appendChild(ta); ta.focus(); ta.select();
-    try{ document.execCommand("copy"); alert("Copied. Paste into Google Sheets."); }
-    catch(e){ alert("Couldn't auto-copy here. The log is selected, long-press to Copy."); return; }
+    try{ if(!document.execCommand("copy"))throw new Error("Copy unavailable"); alert("Copied. Paste into Google Sheets."); }
+    catch(e){ ta.style.opacity="1";ta.style.width="90%";ta.style.height="200px";ta.style.zIndex="100";ta.setAttribute("aria-label","History export: select and copy");alert("Couldn't auto-copy. Copy the text from the export box."); return; }
     document.body.removeChild(ta);
   }
 
@@ -322,9 +407,11 @@
   setInterval(function(){
     var el=document.getElementById("timer");
     if(el && state.startTime) el.textContent=elapsed(Date.now()-state.startTime);
+    var currentDate=localDate(Date.now());
+    if(currentDate!==observedDate){observedDate=currentDate;if(!hasProgress()){state.workDate=currentDate;resetTasks();save();}render();}
   },1000);
 
-  load(); render();
+  resetTasks(); load(); save(); render();
 })();
 </script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}</script>
