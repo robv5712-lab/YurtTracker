@@ -21,24 +21,20 @@
 
   header{background:var(--pine-dark);color:#fff;padding:calc(env(safe-area-inset-top) + 8px) 14px 0;
     position:sticky;top:0;z-index:20;box-shadow:0 2px 8px rgba(20,40,30,.18);}
-  .titlerow{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
-  h1{font-size:18px;line-height:1.2;margin:0;font-weight:700}
-  .date{font-size:12px;line-height:1.25;color:var(--muted);font-weight:600;white-space:nowrap;margin-top:1px}
-  .subtitle{font-size:12px;line-height:1.25;color:#cfe3d7;font-weight:600;margin-top:1px}
-  .tabs{display:flex;gap:4px;margin-top:7px}
+  .titlerow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  h1{font-size:17px;line-height:1.2;margin:0;font-weight:700;white-space:nowrap}
+  .header-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-left:auto}
+  .headerdate{display:block}
+  .headerdate input{width:116px;min-height:34px;border:1px solid #8ba99a;border-radius:8px;padding:4px 6px;background:#fff;color:var(--ink);font:inherit;font-size:12px}
+  .tabs{display:flex;gap:4px;margin-top:5px}
   .tab{flex:1;border:0;background:transparent;color:#bcd4c7;font-size:14px;font-weight:700;
     padding:8px 5px 9px;border-bottom:3px solid transparent;cursor:pointer;}
   .tab .n{font-size:11px;font-weight:700;opacity:.9;margin-left:4px}
   .tab.active{color:#fff;border-bottom-color:#7ed3a2}
 
   main{padding:10px 16px calc(120px + env(safe-area-inset-bottom))}
-  .hostbadge{display:inline-block;background:#3a6650;color:#fff;padding:3px 7px;border-radius:7px;font-size:12px;margin-right:7px}
-  .assignment{background:#fff;border:1px solid #d6ded5;border-radius:14px;padding:11px 14px;margin-bottom:12px}
-  .assignment .eyebrow{font-size:11px;line-height:1.2;color:#526a59;letter-spacing:.4px}
-  .assignment h2{font-size:22px;line-height:1.15;margin:2px 0 1px;color:var(--pine-dark)}
-  .assignment .hours{font-size:14px;line-height:1.2}
-  .workdate{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px;flex-wrap:wrap;font-size:13px;line-height:1.2}
-  .workdate input{font:inherit;min-height:36px;max-width:100%;border:1px solid #bbc9bd;border-radius:8px;padding:6px 8px;background:#fff;color:var(--ink)}
+  .hostbadge{display:inline-block;background:#3a6650;color:#fff;padding:3px 7px;border-radius:7px;font-size:12px}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
   .task{display:flex;align-items:center;gap:12px;padding:14px;min-height:60px;margin-bottom:9px;background:#fff;border:1px solid #d6ded5;border-radius:12px;font-weight:600;cursor:pointer}
   .task input{width:24px;height:24px;flex-shrink:0;accent-color:var(--done)}
   .task.complete{background:#e6f0e6}
@@ -89,14 +85,19 @@
   .footer .btn{flex:1}
   .footer .btn.side{flex:0 0 auto;padding-left:20px;padding-right:20px}
 
+  @media (max-width:390px){.hostbadge{display:none}.headerdate input{width:112px}h1{font-size:16px}}
   @media (prefers-reduced-motion: reduce){*{transition:none !important}}
 </style>
 </head>
 <body>
 <header>
-  <div class="titlerow"><h1>Site &amp; Yurt Tracker</h1><span class="hostbadge">B6</span></div>
-  <div class="date" id="date"></div>
-  <div class="subtitle" id="subtitle"></div>
+  <div class="titlerow">
+    <h1>Site &amp; Yurt Tracker</h1>
+    <div class="header-actions">
+      <span class="hostbadge">B6</span>
+      <label class="headerdate"><span class="sr-only">Work date</span><input id="work-date" type="date" aria-label="Work date"></label>
+    </div>
+  </div>
   <div class="tabs" id="tabs">
     <button class="tab active" data-tab="tasks">Tasks<span class="n" id="n-tasks"></span></button>
     <button class="tab active" data-tab="sites">Sites<span class="n" id="n-sites"></span></button>
@@ -169,21 +170,17 @@
     return h+":"+pad(m)+":"+pad(ss); }
   function clockStr(ms){ try{return new Date(ms).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});}catch(e){return"";} }
   function dateStr(ms){ try{return new Date(ms).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});}catch(e){return"";} }
-  function today(){ return dateStr(Date.now()); }
-
-  var main=document.getElementById("main"), footer=document.getElementById("footer"), tabs=document.getElementById("tabs");
+  var main=document.getElementById("main"), footer=document.getElementById("footer"), tabs=document.getElementById("tabs"), workDateInput=document.getElementById("work-date");
 
   function render(){
-    document.getElementById("date").textContent=today();
+    workDateInput.value=state.workDate;
+    workDateInput.disabled=hasProgress() || state.screen==="history";
 
     if(state.screen==="history"){
-      document.getElementById("subtitle").textContent="Your shift and cleaning log";
       tabs.style.display="none";
       renderHistory(); return;
     }
     tabs.style.display="flex";
-    document.getElementById("subtitle").textContent =
-      state.screen==="add" ? "Your B6 schedule and cleaning list" : "Tap each task or tile as you finish";
     document.getElementById("n-tasks").textContent=state.tasks.filter(function(t){return t.done;}).length+"/"+state.tasks.length;
 
     ["sites","yurts"].forEach(function(k){
@@ -198,18 +195,6 @@
     });
 
     if(state.screen==="add") renderAdd(); else renderTrack();
-  }
-
-  function renderAssignment(){
-    var box=document.createElement("section"); box.className="assignment";
-    var dateLabel=document.createElement("label"); dateLabel.className="workdate"; dateLabel.textContent="Work date";
-    var input=document.createElement("input"); input.type="date";input.value=state.workDate;input.disabled=hasProgress();
-    input.addEventListener("change",function(){if(!validDate(input.value)){input.value=state.workDate;return;}state.workDate=input.value;resetTasks();save();render();});
-    dateLabel.appendChild(input);box.appendChild(dateLabel);
-    var day=document.createElement("div");day.className="eyebrow";day.textContent=dateFromKey(state.workDate).toLocaleDateString(undefined,{weekday:"long"})+" · B6";
-    var title=document.createElement("h2");title.textContent=assignment().role;
-    var hours=document.createElement("div");hours.className="hours";hours.textContent=assignment().hours;
-    box.appendChild(day);box.appendChild(title);box.appendChild(hours);main.appendChild(box);
   }
 
   function renderTasks(){
@@ -241,7 +226,6 @@
     var hist=document.createElement("button"); hist.className="linkbtn"; hist.textContent="History";
     hist.addEventListener("click",function(){ state.screen="history"; save(); render(); });
     top.appendChild(hist); main.appendChild(top);
-    renderAssignment();
 
     if(state.active==="tasks")renderTasks();
     else{
@@ -273,7 +257,6 @@
 
   function renderTrack(){
     main.innerHTML="";
-    renderAssignment();
 
     var tm=document.createElement("div"); tm.className="timer";
     tm.innerHTML='<small>Shift time</small><span id="timer">'+(state.startTime?elapsed(Date.now()-state.startTime):"0:00")+'</span>';
@@ -425,6 +408,10 @@
   tabs.addEventListener("click",function(e){
     var t=e.target.closest(".tab"); if(!t)return;
     state.active=t.getAttribute("data-tab"); save(); render();
+  });
+  workDateInput.addEventListener("change",function(){
+    if(!validDate(workDateInput.value)){workDateInput.value=state.workDate;return;}
+    state.workDate=workDateInput.value;resetTasks();save();render();
   });
 
   function refreshDay(){
