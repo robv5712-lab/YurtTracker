@@ -19,25 +19,26 @@
   body{background:var(--bg);color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}
 
-  header{background:var(--pine-dark);color:#fff;padding:calc(env(safe-area-inset-top) + 14px) 16px 0;
+  header{background:var(--pine-dark);color:#fff;padding:calc(env(safe-area-inset-top) + 8px) 14px 0;
     position:sticky;top:0;z-index:20;box-shadow:0 2px 8px rgba(20,40,30,.18);}
-  .titlerow{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
-  h1{font-size:19px;margin:0;font-weight:700}
-  .date{font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap}
-  .subtitle{font-size:13px;color:#cfe3d7;font-weight:600;margin-top:3px}
-  .tabs{display:flex;gap:6px;margin-top:12px}
-  .tab{flex:1;border:0;background:transparent;color:#bcd4c7;font-size:15px;font-weight:700;
-    padding:11px 8px 12px;border-bottom:3px solid transparent;cursor:pointer;}
-  .tab .n{font-size:12px;font-weight:700;opacity:.9;margin-left:6px}
+  .titlerow{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+  h1{font-size:18px;line-height:1.2;margin:0;font-weight:700}
+  .date{font-size:12px;line-height:1.25;color:var(--muted);font-weight:600;white-space:nowrap;margin-top:1px}
+  .subtitle{font-size:12px;line-height:1.25;color:#cfe3d7;font-weight:600;margin-top:1px}
+  .tabs{display:flex;gap:4px;margin-top:7px}
+  .tab{flex:1;border:0;background:transparent;color:#bcd4c7;font-size:14px;font-weight:700;
+    padding:8px 5px 9px;border-bottom:3px solid transparent;cursor:pointer;}
+  .tab .n{font-size:11px;font-weight:700;opacity:.9;margin-left:4px}
   .tab.active{color:#fff;border-bottom-color:#7ed3a2}
 
-  main{padding:14px 16px calc(120px + env(safe-area-inset-bottom))}
-  .hostbadge{display:inline-block;background:#3a6650;color:#fff;padding:4px 8px;border-radius:7px;font-size:13px;margin-right:7px}
-  .assignment{background:#fff;border:1px solid #d6ded5;border-radius:14px;padding:16px;margin-bottom:16px}
-  .assignment .eyebrow{font-size:12px;color:#526a59;letter-spacing:.5px}
-  .assignment h2{font-size:25px;margin:5px 0;color:var(--pine-dark)}
-  .workdate{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;font-size:14px}
-  .workdate input{font:inherit;min-height:44px;max-width:100%;border:1px solid #bbc9bd;border-radius:8px;padding:8px;background:#fff;color:var(--ink)}
+  main{padding:10px 16px calc(120px + env(safe-area-inset-bottom))}
+  .hostbadge{display:inline-block;background:#3a6650;color:#fff;padding:3px 7px;border-radius:7px;font-size:12px;margin-right:7px}
+  .assignment{background:#fff;border:1px solid #d6ded5;border-radius:14px;padding:11px 14px;margin-bottom:12px}
+  .assignment .eyebrow{font-size:11px;line-height:1.2;color:#526a59;letter-spacing:.4px}
+  .assignment h2{font-size:22px;line-height:1.15;margin:2px 0 1px;color:var(--pine-dark)}
+  .assignment .hours{font-size:14px;line-height:1.2}
+  .workdate{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px;flex-wrap:wrap;font-size:13px;line-height:1.2}
+  .workdate input{font:inherit;min-height:36px;max-width:100%;border:1px solid #bbc9bd;border-radius:8px;padding:6px 8px;background:#fff;color:var(--ink)}
   .task{display:flex;align-items:center;gap:12px;padding:14px;min-height:60px;margin-bottom:9px;background:#fff;border:1px solid #d6ded5;border-radius:12px;font-weight:600;cursor:pointer}
   .task input{width:24px;height:24px;flex-shrink:0;accent-color:var(--done)}
   .task.complete{background:#e6f0e6}
@@ -207,7 +208,7 @@
     dateLabel.appendChild(input);box.appendChild(dateLabel);
     var day=document.createElement("div");day.className="eyebrow";day.textContent=dateFromKey(state.workDate).toLocaleDateString(undefined,{weekday:"long"})+" · B6";
     var title=document.createElement("h2");title.textContent=assignment().role;
-    var hours=document.createElement("div");hours.textContent=assignment().hours;
+    var hours=document.createElement("div");hours.className="hours";hours.textContent=assignment().hours;
     box.appendChild(day);box.appendChild(title);box.appendChild(hours);main.appendChild(box);
   }
 
