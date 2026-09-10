@@ -112,7 +112,7 @@
   "use strict";
   var KEY="parkTracker.v5";
   function range(first,last){var a=[];for(var i=first;i<=last;i++)a.push(String(i));return a;}
-  var LOOPS={A:range(76,91),B:range(1,35).filter(function(n){return ["2","6","3","4","5","8","10","32","34"].indexOf(n)===-1;}),C:range(40,72)};
+  var LOOPS={A:range(76,92),B:range(1,35).filter(function(n){return ["2","6","3","4","5","8","10","32","34"].indexOf(n)===-1;}),C:range(40,72)};
   var ROSTERS={ sites:LOOPS.B.concat(LOOPS.C,LOOPS.A),
                 yurts:["34Y","32Y","3Y","4Y","5Y","8Y","10Y"] };
   var YURT_ROWS=[["34Y","32Y"],["3Y","4Y","5Y"],["8Y","10Y"]];
