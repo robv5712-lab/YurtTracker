@@ -1,5 +1,5 @@
 var CACHE_PREFIX = "yurt-tracker-";
-var CACHE = CACHE_PREFIX + "v7-site-92";
+var CACHE = CACHE_PREFIX + "v8-compact-header";
 var ASSETS = [".", "index.html", "manifest.json", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", function(e){
